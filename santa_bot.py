@@ -37,8 +37,8 @@ class Form(ui.Modal, title="Secret Santa Form"):
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.send_message(f"Name: {self.name}\nInterests: {self.interest}\nWishlist: {self.wishlist}")
 
-@client.tree.command()
-async def modal(interaction: discord.Interaction):
+@client.tree.command(name="join", description="Fill out form to participate in Secret Santa!")
+async def join(interaction: discord.Interaction):
     await interaction.response.send_modal(Form())
 
 client.run(TOKEN)
