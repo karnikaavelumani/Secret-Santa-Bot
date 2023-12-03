@@ -1,5 +1,1 @@
-# Ignore .gitignore files
-.gitignore\
-.env\
-# Ignore .gitattributes files
-#
+.env
