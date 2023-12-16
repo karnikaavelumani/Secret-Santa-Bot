@@ -70,7 +70,7 @@ async def on_ready():
     print(F'Slash Commands synced {str(len(synced))} commands!')
     servers[1156821909074358423] = dict()
 
-# Removes the user from the secret santa list ( /remove )
+# Removes the user from the secret santa list (/remove)
 @client.tree.command(name="remove", description="Remove yourself from the Secret Santa list!")
 async def remove(interaction: discord.Interaction):
     if isparticipant(interaction):
