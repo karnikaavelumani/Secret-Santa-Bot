@@ -21,18 +21,21 @@ client = discord.Client(intents=intents)
 client = commands.Bot(command_prefix='/', intents=intents)
 
 # init makeshift server DB
-# TODO: change discord.User.id : list to int : tuple
+# TODO: change discord.User.id : dict[discord.user.id] : list] -> discord.User.id : dict[discord.user.id] : tuple]
 servers: dict[discord.Guild.id : dict[discord.User.id : list[str , list[str] , list[str]]]] = dict()
+serversdistributed: dict[discord.Guild.id : bool] = dict()
 
 def isparticipant(interaction : discord.Interaction) -> True | False:
     try:
         if interaction.user.name == getparticipant(interaction):
             return True
+    except KeyError:
+        return False
     except:
+        print('caught excpetion in isparticipant')
         return False
 
 def addparticipant(interaction : discord.Interaction) -> None:
-    #.update() ???
     servers[interaction.guild.id][interaction.user.id][0] = interaction.user.name
 
 def addinterest(interest : str, interaction : discord.Interaction) -> None:
@@ -121,6 +124,7 @@ async def clear(interaction: discord.Interaction):
         await interaction.response.send_message(content="There are no participants in the Secret Santa List!", ephemeral=True)
     else:
         servers[interaction.guild.id].clear()
+        del serversdistributed[interaction.guild.id] # can still be distributed but not yet cleared, forms cant be made though
         await interaction.response.send_message(content="I cleared the Secret Santa List!", ephemeral=True)
     
 
@@ -133,12 +137,14 @@ class Form(ui.Modal, title="Secret Santa Form"):
         addinterest(f'{self.interest}', interaction)
         addwishlist(f'{self.wishlist}', interaction)
         await interaction.response.send_message(F"Interests: {self.interest}\nWishlist: {self.wishlist}", ephemeral=True)
-        
+    
 
 # Modal to fill out the wishlist form ( /form )
 @client.tree.command(name="form", description="Fill out the form to participate in Secret Santa!")
 async def form(interaction: discord.Interaction):
-    if isparticipant(interaction):
+    if interaction.guild.id in serversdistributed.keys():
+        await interaction.response.send_message(F'Form creation for {interaction.guild.name} is disabled right now', ephemeral=True)
+    elif isparticipant(interaction):
         await interaction.response.send_modal(Form())
     else:
         servers[interaction.guild.id][interaction.user.id] = [interaction.user.name, [], []]
@@ -156,6 +162,7 @@ async def distribute(interaction: discord.Interaction, month : str, day : str, y
     elif len(participants) <= 1:
         await interaction.response.send_message(content="There are not enough participants in the Secret Santa List!", ephemeral=True)
     else:
+        # command that has a dropdown menu if you want to distribute (Yes or No) and forms will be closed
         print(participants)
         # init dict of participants and their assignees
         assigned : dict[discord.User.name : discord.User.name] = dict()
@@ -175,16 +182,20 @@ async def distribute(interaction: discord.Interaction, month : str, day : str, y
 
                 assigned[participant] = randsanta
 
-        # send message to each participant with their assigned participant.
+        # send message to each participant with their assigned participant.    
         for membername in participants:
-            await interaction.guild.get_member_named(membername).send(F'''
-Your **__assigned secret santa__** is `@{assigned[membername]}`!
-The **__date__** is {month}/{day}/{year} at {time}{timezone}!
-Their **__interests__** are\n{getinterest(interaction, assigned[membername])}
------
-Their **__wishlist__** is\n{getwishlist(interaction, assigned[membername])}''')
+            emb = discord.Embed(
+                title='Secret Santa Info',
+                color=discord.Color.green()
+            )
+            emb.add_field(name='Gift Reciever', value=F'Your **__assigned secret santa__** is `@{assigned[membername]}`!')
+            emb.add_field(name='Date and Time', value=F'{month}/{day}/{year} at {time}{timezone}!')
+            emb.add_field(name='Their Interests', value=F'{getinterest(interaction, assigned[membername])}')
+            emb.add_field(name='Their Wishlist', value=F'{getwishlist(interaction, assigned[membername])}')
 
+            await interaction.guild.get_member_named(membername).send(embed=emb)
         
+        serversdistributed[interaction.guild.id] = True
 
 
 client.run(TOKEN)
