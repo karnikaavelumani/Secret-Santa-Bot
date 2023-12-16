@@ -70,7 +70,7 @@ async def on_ready():
     print(F'Slash Commands synced {str(len(synced))} commands!')
     servers[1156821909074358423] = dict()
 
-# Removes the user from the secret santa list (/remove)
+# Removes the user from the secret santa list ( /remove )
 @client.tree.command(name="remove", description="Remove yourself from the Secret Santa list!")
 async def remove(interaction: discord.Interaction):
     if isparticipant(interaction):
@@ -100,16 +100,9 @@ async def clear(interaction: discord.Interaction):
     else:
         servers[interaction.guild.id].clear()
         await interaction.response.send_message(content="I cleared the Secret Santa List!", ephemeral=True)
-
-
-# # Listener if a users nickname was changed
-# @client.event
-# async def on_member_update(before, after):
-#     if after.id in participants:
-#         participants[before.id] = after.name if after.nick == None else after.nick
     
 
-# Modal practice --> input into dictionary?
+# Modal to fill out the wishlist form ( /form )
 class Form(ui.Modal, title="Secret Santa Form"):
     name = ui.TextInput(label='Enter your name', placeholder="My name is...", style=discord.TextStyle.short)
     interest = ui.TextInput(label='List your interests', placeholder="Pokemon, programming, typing...", style=discord.TextStyle.paragraph)
@@ -132,3 +125,9 @@ async def form(interaction: discord.Interaction):
 
 
 client.run(TOKEN)
+
+# TODO: 
+# TODO: 
+# TODO: 
+# TODO: 
+# TODO: 
