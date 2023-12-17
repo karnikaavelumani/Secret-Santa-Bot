@@ -196,6 +196,7 @@ async def distribute(interaction: discord.Interaction, month : str, day : str, y
             await interaction.guild.get_member_named(membername).send(embed=emb)
         
         serversdistributed[interaction.guild.id] = True
+        await interaction.response.send_message(content="I distributed the Secret Santas!", ephemeral=True)
 
 
 client.run(TOKEN)
